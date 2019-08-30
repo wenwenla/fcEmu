@@ -27,7 +27,7 @@ public:
 
     const static Instruction INS[256];
 
-    Instruction(const char* name, int cycle, InsType type, int cycle_type);
+    Instruction(const char* name, int cycle, InsType type);
 
     std::string getName() const;
     int getCycle() const;
@@ -38,7 +38,6 @@ private:
     char _name[4];
     int _cycle;
     InsType _type;
-    int _cycle_type;
 };
 
 #endif //FCEMU_INSTRUCTION_H

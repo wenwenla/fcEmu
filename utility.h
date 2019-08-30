@@ -9,6 +9,9 @@
 #include <vector>
 
 using Byte = unsigned char;
-std::string decode(const std::vector<Byte>& ins);
+
+Byte low(unsigned short byte2);
+Byte high(unsigned short byte2);
+unsigned short combine(Byte low, Byte high);
 
 #endif //FCEMU_UTILITY_H

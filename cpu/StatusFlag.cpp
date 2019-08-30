@@ -5,74 +5,79 @@
 #include "StatusFlag.h"
 #include <cassert>
 
-void StatusFlag::reset() {
-    _flag.reset();
+StatusFlag::StatusFlag() {
+    reset();
 }
 
-void StatusFlag::setNegative(int flag) {
-    assert(flag == 0 || flag == 1);
+void StatusFlag::reset() {
+    _flag.reset();
+    _flag.set(5, true);
+}
+
+void StatusFlag::setNegative(bool flag) {
     _flag.set(7, flag);
 }
 
-void StatusFlag::setOverflow(int flag) {
-    assert(flag == 0 || flag == 1);
+void StatusFlag::setOverflow(bool flag) {
     _flag.set(6, flag);
 }
 
-void StatusFlag::setBreak(int flag) {
-    assert(flag == 0 || flag == 1);
+void StatusFlag::setBreak(bool flag) {
     _flag.set(4, flag);
 }
 
-void StatusFlag::setDecimal(int flag) {
-    assert(flag == 0 || flag == 1);
+void StatusFlag::setDecimal(bool flag) {
     _flag.set(3, flag);
 }
 
-void StatusFlag::setIntDisable(int flag) {
-    assert(flag == 0 || flag == 1);
+void StatusFlag::setIntDisable(bool flag) {
     _flag.set(2, flag);
 }
 
-void StatusFlag::setZero(int flag) {
-    assert(flag == 0 || flag == 1);
+void StatusFlag::setZero(bool flag) {
     _flag.set(1, flag);
 }
 
-void StatusFlag::setCarry(int flag) {
-    assert(flag == 0 || flag == 1);
+void StatusFlag::setCarry(bool flag) {
     _flag.set(0, flag);
 }
 
-StatusFlag::StatusFlag() {
-    _flag.reset();
-    _flag.set(5, 1);
-}
-
-int StatusFlag::getNegative() const {
+bool StatusFlag::getNegative() const {
     return _flag[7];
 }
 
-int StatusFlag::getOverflow() const {
+bool StatusFlag::getOverflow() const {
     return _flag[6];
 }
 
-int StatusFlag::getBreak() const {
+bool StatusFlag::getBreak() const {
     return _flag[4];
 }
 
-int StatusFlag::getDecimal() const {
+bool StatusFlag::getDecimal() const {
     return _flag[3];
 }
 
-int StatusFlag::getIntDisable() const {
+bool StatusFlag::getIntDisable() const {
     return _flag[2];
 }
 
-int StatusFlag::getZero() const {
+bool StatusFlag::getZero() const {
     return _flag[1];
 }
 
-int StatusFlag::getCarry() const {
+bool StatusFlag::getCarry() const {
     return _flag[0];
+}
+
+int StatusFlag::toInt() const {
+    int result = 0;
+    for(int i = 7; i >= 0; --i) {
+        result = result * 2 + _flag[i];
+    }
+    return result;
+}
+
+Byte StatusFlag::toByte() const {
+    return toInt();
 }

@@ -19,6 +19,9 @@ int Instruction::getCycle() const {
 }
 
 int Instruction::length() const {
+    if(_name[0] == 'B' && _name[1] == 'R' && _name[2] == 'K') {
+        return 2;
+    }
     int result;
     switch (_type) {
         case InsType::IMM:
@@ -27,13 +30,13 @@ int Instruction::length() const {
         case InsType::ZPY:
         case InsType::IZX:
         case InsType::IZY:
+        case InsType::REL:
             result = 2;
             break;
         case InsType::ABS:
         case InsType::ABX:
         case InsType::ABY:
         case InsType::IND:
-        case InsType::REL:
             result = 3;
             break;
         case InsType::IMP:
@@ -43,14 +46,13 @@ int Instruction::length() const {
     return result;
 }
 
-Instruction::Instruction(const char *name, int cycle, InsType type, int cycle_type=0) {
+Instruction::Instruction(const char *name, int cycle, InsType type) {
     _name[0] = name[0];
     _name[1] = name[1];
     _name[2] = name[2];
     _name[3] = '\0';
     _cycle = cycle;
     _type = type;
-    _cycle_type = cycle_type;
 }
 
 const Instruction Instruction::INS[256] = {
