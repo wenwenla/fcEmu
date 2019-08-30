@@ -16,18 +16,18 @@ std::string decode(const std::vector<Byte> &ins) {
     constexpr int IMM = 0, ZP = 1, ZPX = 2, ZPY = 3, IZX = 4, IZY = 5, ABS = 6,
             ABX = 7, ABY = 8, IND = 9, REL = 10, NONE = 11;
     constexpr char fmt[][20] = {
-            "%s #$%02x\n", //imm 0
-            "%s $%02x\n", //zp 1
-            "%s $%02x, X\n", //zpx 2
-            "%s $%02x, Y\n", //zpy 3
-            "%s ($%02x, X)\n", //izx 4
-            "%s ($%02x), Y\n", //izy 5
-            "%s $%04x\n", //abs 6
-            "%s $%04x, X\n", //abx 7
-            "%s $%04x, Y\n", //aby 8
-            "%s ($%04x)\n", //ind 9
-            "%s $%04x\n", //rel 10
-            "%s\n", //NONE
+            "%s #$%02x", //imm 0
+            "%s $%02x", //zp 1
+            "%s $%02x, X", //zpx 2
+            "%s $%02x, Y", //zpy 3
+            "%s ($%02x, X)", //izx 4
+            "%s ($%02x), Y", //izy 5
+            "%s $%04x", //abs 6
+            "%s $%04x, X", //abx 7
+            "%s $%04x, Y", //aby 8
+            "%s ($%04x)", //ind 9
+            "%s $%04x", //rel 10
+            "%s", //NONE
     };
     char buf[32];
     switch (ins[0]) {
@@ -38,7 +38,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZX], "ORA", ins[1]);
             break;
         case 0x02:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0x03:
             sprintf(buf, fmt[IZX], "SLO", ins[1]);
@@ -86,7 +86,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZY], "ORA", ins[1]);
             break;
         case 0x12:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0x13:
             sprintf(buf, fmt[IZY], "SLO", ins[1]);
@@ -134,7 +134,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZX], "AND", ins[1]);
             break;
         case 0x22:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0x23:
             sprintf(buf, fmt[IZX], "RLA", ins[1]);
@@ -182,7 +182,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZY], "AND", ins[1]);
             break;
         case 0x32:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0x33:
             sprintf(buf, fmt[IZY], "RLA", ins[1]);
@@ -230,7 +230,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZX], "EOR", ins[1]);
             break;
         case 0x42:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0x43:
             sprintf(buf, fmt[IZX], "SRE", ins[1]);
@@ -278,7 +278,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZY], "EOR", ins[1]);
             break;
         case 0x52:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0x53:
             sprintf(buf, fmt[IZY], "SRE", ins[1]);
@@ -326,7 +326,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZX], "ADC", ins[1]);
             break;
         case 0x62:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0x63:
             sprintf(buf, fmt[IZX], "RRA", ins[1]);
@@ -374,7 +374,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZY], "ADC", ins[1]);
             break;
         case 0x72:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0x73:
             sprintf(buf, fmt[IZY], "RRA", ins[1]);
@@ -470,7 +470,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZY], "STA", ins[1]);
             break;
         case 0x92:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0x93:
             sprintf(buf, fmt[IZY], "AHX", ins[1]);
@@ -566,7 +566,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZY], "LDA", ins[1]);
             break;
         case 0xb2:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0xb3:
             sprintf(buf, fmt[IZY], "LAX", ins[1]);
@@ -662,7 +662,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZY], "CMP", ins[1]);
             break;
         case 0xd2:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0xd3:
             sprintf(buf, fmt[IZY], "DCP", ins[1]);
@@ -758,7 +758,7 @@ std::string decode(const std::vector<Byte> &ins) {
             sprintf(buf, fmt[IZY], "SBC", ins[1]);
             break;
         case 0xf2:
-            assert(!"NOT IMPL");
+            sprintf(buf, fmt[NONE], "STP");
             break;
         case 0xf3:
             sprintf(buf, fmt[IZY], "ISC", ins[1]);
