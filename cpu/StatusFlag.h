@@ -30,8 +30,8 @@ public:
     bool getCarry() const;
 
     int toInt() const;
-
     Byte toByte() const;
+    void setNum(Byte x);
 private:
     std::bitset<8> _flag;
 };

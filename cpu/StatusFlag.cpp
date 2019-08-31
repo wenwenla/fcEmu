@@ -81,3 +81,9 @@ int StatusFlag::toInt() const {
 Byte StatusFlag::toByte() const {
     return toInt();
 }
+
+void StatusFlag::setNum(Byte x) {
+    for(int i = 0; i < 8; ++i) {
+        _flag.set(i, x >> i & 1);
+    }
+}

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "rom/RomLoader.h"
 #include "memory/Memory.h"
 #include "utility.h"
@@ -28,8 +29,16 @@ int main() {
 //    }
 //    puts("=================END=======================");
 
+    std::ifstream fs("../docs/log.sp");
+    std::string line;
     Cpu cpu(mem);
     for(int _ = 0; _ < 102400; ++_) {
+        fs >> line;
+        auto log = cpu.log();
+        if(log != line) {
+            std::cout << "ERROR: \n" << line << "\n" << log << std::endl;
+            return -1;
+        }
         cpu.run();
     }
     return 0;

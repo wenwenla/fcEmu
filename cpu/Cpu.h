@@ -13,10 +13,11 @@
 
 class Cpu {
 public:
-    Cpu(Memory& memory);
+    Cpu(Memory &memory);
+
     int run();
 
-    void log() const;
+    std::string log() const;
 
     std::string decode(Byte op) const;
 
@@ -26,17 +27,22 @@ private:
     unsigned short _pc; //pc should be 16 bits.
     Byte _sp;
     int _now_cycle;
-    Memory& _mem;
+    Memory &_mem;
 
 private:
-    int _get_data(const Instruction &ins, const std::vector<Byte> &data) const;
+    std::pair<int, int> _get_data(const Instruction &ins, const std::vector<Byte> &data) const;
+
     void _stack_push(Byte byte);
+
     Byte _stack_pop();
+
+    bool _cross_boundary(const Instruction &ins, const std::vector<Byte> &data) const;
+
 private:
 
-    void _jmp(const Instruction &ins, const std::vector<Byte>& data);
+    void _jmp(const Instruction &ins, const std::vector<Byte> &data);
 
-    void _ldx(const Instruction& ins, const std::vector<Byte>& data);
+    void _ldx(const Instruction &ins, const std::vector<Byte> &data);
 
     void _stx(const Instruction &ins, const std::vector<Byte> &data);
 
@@ -81,6 +87,66 @@ private:
     void _and(const Instruction &ins, const std::vector<Byte> &data);
 
     void _cmp(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _cld(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _pha(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _plp(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _bmi(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _ora(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _clv(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _eor(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _adc(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _ldy(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _cpy(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _cpx(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _sbc(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _iny(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _inx(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _dey(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _dex(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _tay(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _tax(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _tya(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _txa(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _tsx(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _txs(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _rti(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _lsr(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _asl(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _ror(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _rol(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _sty(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _inc(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _dec(const Instruction &ins, const std::vector<Byte> &data);
 };
 
 
