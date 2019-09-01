@@ -147,6 +147,22 @@ private:
     void _inc(const Instruction &ins, const std::vector<Byte> &data);
 
     void _dec(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _lax(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _sax(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _dcp(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _isc(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _slo(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _rla(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _sre(const Instruction &ins, const std::vector<Byte> &data);
+
+    void _rra(const Instruction &ins, const std::vector<Byte> &data);
 };
 
 

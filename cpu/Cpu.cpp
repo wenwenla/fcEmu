@@ -31,17 +31,22 @@ std::string Cpu::decode(Byte op) const {
 }
 
 bool Cpu::_cross_boundary(const Instruction &ins, const std::vector<Byte> &data) const {
-    //TODO: NEED BUG FIX
     if(ins.getType() == InsType::IZY) {
-        int low = _mem.read(data[1]);
-        //int high = _mem.read((data[1] + 1) % 256); //This is a bug in 6052.
-        return (low + _reg_y > 0xff);
+        int l = _mem.read(data[1]);
+        int tmp = _reg_y + l;
+        return (tmp > 0xff);
     } else if(ins.getType() == InsType::ABY) {
-        int low = _mem.read(data[1]);
-        return (low + _reg_y > 0xff);
+        int l = data[1];
+        int tmp = _reg_y + l;
+        return (tmp > 0xff);
     } else if(ins.getType() == InsType::ABX) {
-        int low = _mem.read(data[1]);
-        return (low + _reg_x > 0xff);
+        int l = data[1];
+        int tmp = _reg_x + l;
+        return (tmp > 0xff);
+    } else if(ins.getType() == InsType::REL) {
+        int nxt_op_addr = _pc + ins.length();
+        int jmp_addr = _pc + (char)data[1] + ins.length();
+        return ((nxt_op_addr & 0xff00) != (jmp_addr & 0xff00));
     } else {
         return false;
     }
@@ -49,7 +54,7 @@ bool Cpu::_cross_boundary(const Instruction &ins, const std::vector<Byte> &data)
 
 std::pair<int, int> Cpu::_get_data(const Instruction &ins, const std::vector<Byte> &data) const {
     int a = 0x3f3f, v = 0x3f3f, index;
-    int l, r;
+    int l, h;
     switch (ins.getType()) {
         case InsType::IMM:
             v = data[1];
@@ -59,10 +64,14 @@ std::pair<int, int> Cpu::_get_data(const Instruction &ins, const std::vector<Byt
             v = _mem.read(a);
             break;
         case InsType::ZPX:
-            assert(!"ZPX");
+            a = data[1] + _reg_x;
+            a %= 256;
+            v = _mem.read(a);
             break;
         case InsType::ZPY:
-            assert(!"ZPY");
+            a = data[1] + _reg_y;
+            a %= 256;
+            v = _mem.read(a);
             break;
         case InsType::IZX:
             index = (data[1] + _reg_x);
@@ -73,8 +82,8 @@ std::pair<int, int> Cpu::_get_data(const Instruction &ins, const std::vector<Byt
             break;
         case InsType::IZY:
             l = _mem.read(data[1]);
-            r = _mem.read((data[1] + 1) % 256); //This is a bug in 6052.
-            a = combine(l, r) + _reg_y;
+            h = _mem.read((data[1] + 1) % 256); //This is a bug in 6052.
+            a = combine(l, h) + _reg_y;
             a %= 65536;
             v = _mem.read(a);
             break;
@@ -94,11 +103,12 @@ std::pair<int, int> Cpu::_get_data(const Instruction &ins, const std::vector<Byt
             break;
         case InsType::IND:
             a = combine(data[1], data[2]);
-            l = low(a); r = high(a);
-            a = combine(_mem.read(a), _mem.read(r * 256 + (l + 1) % 256)); //This is a bug in 6502.
+            l = low(a); h = high(a);
+            a = combine(_mem.read(a), _mem.read(h * 256 + (l + 1) % 256)); //This is a bug in 6502.
             break;
         case InsType::REL:
-            a = _pc + (int) data[1] + ins.length();
+            //WTF, see data[1] as signed number
+            a = _pc + (char)data[1] + ins.length();
             break;
         case InsType::IMP:
             break;
@@ -125,16 +135,42 @@ int Cpu::run() {
         case 0xa2:
         case 0xae:
         case 0xa6:
+        case 0xb6:
+        case 0xbe:
             _ldx(ins, data);
             break;
         case 0x86:
         case 0x8e:
+        case 0x96:
             _stx(ins, data);
             break;
         case 0x20:
             _jsr(ins, data);
             break;
         case 0xea:
+        case 0x04:
+        case 0x44:
+        case 0x64:
+        case 0x0c:
+        case 0x14:
+        case 0x34:
+        case 0x54:
+        case 0x74:
+        case 0xd4:
+        case 0xf4:
+        case 0x1a:
+        case 0x3a:
+        case 0x5a:
+        case 0x7a:
+        case 0xda:
+        case 0xfa:
+        case 0x80:
+        case 0x1c:
+        case 0x3c:
+        case 0x5c:
+        case 0x7c:
+        case 0xdc:
+        case 0xfc:
             _nop(ins, data);
             break;
         case 0x38:
@@ -155,6 +191,8 @@ int Cpu::run() {
         case 0xa1:
         case 0xb1:
         case 0xb9:
+        case 0xb5:
+        case 0xbd:
             _lda(ins, data);
             break;
         case 0xf0:
@@ -167,6 +205,9 @@ int Cpu::run() {
         case 0x8d:
         case 0x81:
         case 0x91:
+        case 0x99:
+        case 0x95:
+        case 0x9d:
             _sta(ins, data);
             break;
         case 0x24:
@@ -202,6 +243,9 @@ int Cpu::run() {
         case 0x25:
         case 0x2d:
         case 0x31:
+        case 0x39:
+        case 0x35:
+        case 0x3d:
             _and(ins, data);
             break;
         case 0xc9:
@@ -209,6 +253,9 @@ int Cpu::run() {
         case 0xc5:
         case 0xcd:
         case 0xd1:
+        case 0xd9:
+        case 0xd5:
+        case 0xdd:
             _cmp(ins, data);
             break;
         case 0xd8:
@@ -228,6 +275,9 @@ int Cpu::run() {
         case 0x05:
         case 0x0d:
         case 0x11:
+        case 0x19:
+        case 0x15:
+        case 0x1d:
             _ora(ins, data);
             break;
         case 0xb8:
@@ -238,6 +288,9 @@ int Cpu::run() {
         case 0x45:
         case 0x4d:
         case 0x51:
+        case 0x59:
+        case 0x55:
+        case 0x5d:
             _eor(ins, data);
             break;
         case 0x69:
@@ -245,11 +298,16 @@ int Cpu::run() {
         case 0x65:
         case 0x6d:
         case 0x71:
+        case 0x79:
+        case 0x75:
+        case 0x7d:
             _adc(ins, data);
             break;
         case 0xa0:
         case 0xa4:
         case 0xac:
+        case 0xb4:
+        case 0xbc:
             _ldy(ins, data);
             break;
         case 0xc0:
@@ -267,6 +325,10 @@ int Cpu::run() {
         case 0xe5:
         case 0xed:
         case 0xf1:
+        case 0xf9:
+        case 0xf5:
+        case 0xfd:
+        case 0xeb:
             _sbc(ins, data);
             break;
         case 0xc8:
@@ -305,34 +367,115 @@ int Cpu::run() {
         case 0x4a:
         case 0x46:
         case 0x4e:
+        case 0x56:
+        case 0x5e:
             _lsr(ins, data);
             break;
         case 0x0a:
         case 0x06:
         case 0x0e:
+        case 0x16:
+        case 0x1e:
             _asl(ins, data);
             break;
         case 0x6a:
         case 0x66:
         case 0x6e:
+        case 0x76:
+        case 0x7e:
             _ror(ins, data);
             break;
         case 0x2a:
         case 0x26:
         case 0x2e:
+        case 0x36:
+        case 0x3e:
             _rol(ins, data);
             break;
         case 0x84:
         case 0x8c:
+        case 0x94:
             _sty(ins, data);
             break;
         case 0xe6:
         case 0xee:
+        case 0xf6:
+        case 0xfe:
             _inc(ins, data);
             break;
         case 0xc6:
         case 0xce:
+        case 0xd6:
+        case 0xde:
             _dec(ins, data);
+            break;
+        case 0xa3:
+        case 0xa7:
+        case 0xaf:
+        case 0xb3:
+        case 0xb7:
+        case 0xbf:
+            _lax(ins, data);
+            break;
+        case 0x83:
+        case 0x87:
+        case 0x8f:
+        case 0x97:
+            _sax(ins, data);
+            break;
+        case 0xc3:
+        case 0xc7:
+        case 0xcf:
+        case 0xd3:
+        case 0xd7:
+        case 0xdb:
+        case 0xdf:
+            _dcp(ins, data);
+            break;
+        case 0xe3:
+        case 0xe7:
+        case 0xef:
+        case 0xf3:
+        case 0xf7:
+        case 0xfb:
+        case 0xff:
+            _isc(ins, data);
+            break;
+        case 0x03:
+        case 0x07:
+        case 0x0f:
+        case 0x13:
+        case 0x17:
+        case 0x1b:
+        case 0x1f:
+            _slo(ins, data);
+            break;
+        case 0x23:
+        case 0x27:
+        case 0x2f:
+        case 0x33:
+        case 0x37:
+        case 0x3b:
+        case 0x3f:
+            _rla(ins, data);
+            break;
+        case 0x43:
+        case 0x47:
+        case 0x4f:
+        case 0x53:
+        case 0x57:
+        case 0x5b:
+        case 0x5f:
+            _sre(ins, data);
+            break;
+        case 0x63:
+        case 0x67:
+        case 0x6f:
+        case 0x73:
+        case 0x77:
+        case 0x7b:
+        case 0x7f:
+            _rra(ins, data);
             break;
         default:
             printf("UNKNOWN OP $%02x!", op);
@@ -383,12 +526,14 @@ void Cpu::_jmp(const Instruction &ins, const std::vector<Byte> &data) {
 
 void Cpu::_ldx(const Instruction &ins, const std::vector<Byte> &data) {
     assert(ins.getName() == "LDX");
+    int need_more_cycle = 0;
+    if(_cross_boundary(ins, data)) need_more_cycle = 1;
     auto d = _get_data(ins, data);
     _reg_x = d.second;
     _flag.setZero(_reg_x == 0);
     _flag.setNegative((_reg_x >> 7 & 1) == 1);
     _pc += ins.length();
-    _now_cycle += ins.getCycle();
+    _now_cycle += ins.getCycle() + need_more_cycle;
 }
 
 void Cpu::_stx(const Instruction &ins, const std::vector<Byte> &data) {
@@ -410,8 +555,10 @@ void Cpu::_jsr(const Instruction &ins, const std::vector<Byte> &data) {
 
 void Cpu::_nop(const Instruction &ins, const std::vector<Byte> &data) {
     assert(ins.getName() == "NOP");
+    int need_more_cycle = 0;
+    if(_cross_boundary(ins, data)) need_more_cycle = 1;
     _pc += ins.length();
-    _now_cycle += ins.getCycle();
+    _now_cycle += ins.getCycle() + need_more_cycle;
 }
 
 void Cpu::_sec(const Instruction &ins, const std::vector<Byte> &data) {
@@ -463,9 +610,11 @@ void Cpu::_lda(const Instruction &ins, const std::vector<Byte> &data) {
 
 void Cpu::_beq(const Instruction &ins, const std::vector<Byte> &data) {
     assert(ins.getName() == "BEQ");
+    int need_more_cycle = 0;
+    if(_cross_boundary(ins, data)) need_more_cycle = 1;
     if (_flag.getZero()) {
         _pc = _get_data(ins, data).first;
-        _now_cycle += ins.getCycle() + 1;
+        _now_cycle += ins.getCycle() + 1 + need_more_cycle;
     } else {
         _pc += ins.length();
         _now_cycle += ins.getCycle();
@@ -672,12 +821,14 @@ void Cpu::_adc(const Instruction &ins, const std::vector<Byte> &data) {
 
 void Cpu::_ldy(const Instruction &ins, const std::vector<Byte> &data) {
     assert(ins.getName() == "LDY");
+    int need_more_cycle = 0;
+    if(_cross_boundary(ins, data)) need_more_cycle = 1;
     Byte v = _get_data(ins, data).second;
     _reg_y = v;
     _flag.setZero(_reg_y == 0);
     _flag.setNegative((_reg_y >> 7 & 1) == 1);
     _pc += ins.length();
-    _now_cycle += ins.getCycle();
+    _now_cycle += ins.getCycle() + need_more_cycle;
 }
 
 void Cpu::_cpy(const Instruction &ins, const std::vector<Byte> &data) {
@@ -946,6 +1097,145 @@ void Cpu::_dec(const Instruction &ins, const std::vector<Byte> &data) {
     _mem.write(a, v);
     _flag.setZero(v == 0);
     _flag.setNegative((v >> 7 & 1) == 1);
+    _pc += ins.length();
+    _now_cycle += ins.getCycle();
+}
+
+void Cpu::_lax(const Instruction &ins, const std::vector<Byte> &data) {
+    assert(ins.getName() == "LAX");
+    int need_more_cycle = 0;
+    if(_cross_boundary(ins, data)) need_more_cycle = 1;
+    int v = _get_data(ins, data).second;
+    _reg_a = v;
+    _reg_x = v;
+    _flag.setZero(_reg_a == 0);
+    _flag.setNegative((_reg_a >> 7 & 1) == 1);
+    _pc += ins.length();
+    _now_cycle += ins.getCycle() + need_more_cycle;
+}
+
+void Cpu::_sax(const Instruction &ins, const std::vector<Byte> &data) {
+    assert(ins.getName() == "SAX");
+    int a = _get_data(ins, data).first;
+    _mem.write(a, (_reg_a & _reg_x));
+    _pc += ins.length();
+    _now_cycle += ins.getCycle();
+}
+
+void Cpu::_dcp(const Instruction &ins, const std::vector<Byte> &data) {
+    //dec addr and cmp addr
+    assert(ins.getName() == "DCP");
+    auto d = _get_data(ins, data);
+    unsigned short a = d.first;
+    Byte v = d.second;
+    --v;
+    _mem.write(a, v);
+    _flag.setNegative(((_reg_a - v) >> 7 & 1) == 1);
+    _flag.setZero(_reg_a == v);
+    _flag.setCarry(_reg_a >= v);
+    _pc += ins.length();
+    _now_cycle += ins.getCycle();
+}
+
+void Cpu::_isc(const Instruction &ins, const std::vector<Byte> &data) {
+    //inc addr and sbc addr
+    assert(ins.getName() == "ISC");
+    Byte per_reg = _reg_a;
+    auto d = _get_data(ins, data);
+    unsigned short a = d.first;
+    Byte v = d.second;
+    ++v;
+    _mem.write(a, v);
+    int l = (char) _reg_a, r = -char(v);
+    int res = l + r - (int) !_flag.getCarry();
+    _reg_a = res;
+    bool carry = _flag.getCarry();
+    _flag.setCarry(per_reg > v || (per_reg == v && carry));
+    _flag.setOverflow(res < -128 || res > 127);
+    _flag.setNegative((_reg_a >> 7 & 1) == 1);
+    _flag.setZero(_reg_a == 0);
+    _pc += ins.length();
+    _now_cycle += ins.getCycle();
+}
+
+void Cpu::_slo(const Instruction &ins, const std::vector<Byte> &data) {
+    assert(ins.getName() == "SLO");
+    auto d = _get_data(ins, data);
+    unsigned short a = d.first;
+    Byte v = d.second;
+    bool carry = (v >> 7 & 1);
+    v = v << 1;
+    _mem.write(a, v);
+    _flag.setCarry(carry);
+    _flag.setNegative((v >> 7 & 1) == 1);
+    _flag.setZero(v == 0);
+
+    _reg_a |= v;
+    _flag.setNegative((_reg_a >> 7 & 1) == 1);
+    _flag.setZero(_reg_a == 0);
+    _pc += ins.length();
+    _now_cycle += ins.getCycle();
+}
+
+void Cpu::_rla(const Instruction &ins, const std::vector<Byte> &data) {
+    //ROL + AND
+    assert(ins.getName() == "RLA");
+    auto d = _get_data(ins, data);
+    unsigned short a = d.first;
+    Byte v = d.second;
+    bool origin_carry = _flag.getCarry();
+    bool carry = (v >> 7 & 1);
+    v = v << 1;
+    v |= int(origin_carry);
+    _mem.write(a, v);
+    _flag.setCarry(carry);
+    _flag.setNegative((v >> 7 & 1) == 1);
+    _flag.setZero(v == 0);
+    _reg_a = _reg_a & v;
+    _flag.setNegative((_reg_a >> 7 & 1) == 1);
+    _flag.setZero(_reg_a == 0);
+    _pc += ins.length();
+    _now_cycle += ins.getCycle();
+}
+
+void Cpu::_sre(const Instruction &ins, const std::vector<Byte> &data) {
+    auto d = _get_data(ins, data);
+    unsigned short a = d.first;
+    Byte v = d.second;
+    bool carry = (v & 1);
+    v = v >> 1;
+    _mem.write(a, v);
+    _flag.setCarry(carry);
+    _flag.setNegative(false);
+    _flag.setZero(v == 0);
+    _reg_a ^= v;
+    _flag.setZero(_reg_a == 0);
+    _flag.setNegative((_reg_a >> 7 & 1) == 1);
+    _pc += ins.length();
+    _now_cycle += ins.getCycle();
+}
+
+void Cpu::_rra(const Instruction &ins, const std::vector<Byte> &data) {
+    //ROR + ADC
+    auto d = _get_data(ins, data);
+    unsigned short a = d.first;
+    Byte v = d.second;
+    bool origin_carry = _flag.getCarry();
+    bool carry = (v & 1);
+    v = v >> 1;
+    v |= int(origin_carry) << 7;
+    _mem.write(a, v);
+    _flag.setCarry(carry);
+    _flag.setNegative((v >> 7 & 1) == 1);
+    _flag.setZero(v == 0);
+    int ul = v, ur = _reg_a;
+    int l = (char) v, r = char(_reg_a);
+    int res = l + r + (int) _flag.getCarry();
+    _reg_a = res;
+    _flag.setCarry(ul + ur + (int) _flag.getCarry() > 255);
+    _flag.setOverflow(res < -128 || res > 127);
+    _flag.setNegative((res >> 7 & 1) == 1);
+    _flag.setZero(res == 0);
     _pc += ins.length();
     _now_cycle += ins.getCycle();
 }
