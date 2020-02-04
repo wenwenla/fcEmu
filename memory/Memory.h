@@ -1,7 +1,3 @@
-//
-// Created by DELL on 2019/8/29.
-//
-
 #ifndef FCEMU_MEMORY_H
 #define FCEMU_MEMORY_H
 

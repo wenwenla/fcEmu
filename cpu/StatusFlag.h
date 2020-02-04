@@ -1,7 +1,3 @@
-//
-// Created by DELL on 2019/8/30.
-//
-
 #ifndef FCEMU_STATUSFLAG_H
 #define FCEMU_STATUSFLAG_H
 

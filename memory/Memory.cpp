@@ -1,7 +1,3 @@
-//
-// Created by DELL on 2019/8/29.
-//
-
 #include "Memory.h"
 #include <cassert>
 #include <iostream>

@@ -1,7 +1,3 @@
-//
-// Created by DELL on 2019/8/30.
-//
-
 #ifndef FCEMU_INSTRUCTION_H
 #define FCEMU_INSTRUCTION_H
 

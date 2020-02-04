@@ -1,7 +1,3 @@
-//
-// Created by DELL on 2019/8/23.
-//
-
 #ifndef FCEMU_ROMLOADER_H
 #define FCEMU_ROMLOADER_H
 

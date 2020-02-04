@@ -1,7 +1,3 @@
-//
-// Created by DELL on 2019/8/23.
-//
-
 #include "RomLoader.h"
 #include <fstream>
 

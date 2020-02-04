@@ -1,7 +1,3 @@
-//
-// Created by DELL on 2019/8/30.
-//
-
 #include "Instruction.h"
 
 
