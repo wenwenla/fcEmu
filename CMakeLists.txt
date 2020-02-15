@@ -1,6 +1,20 @@
-cmake_minimum_required(VERSION 3.5)
-project(fcEmu)
+cmake_minimum_required (VERSION 3.5)
 
-set(CMAKE_CXX_STANDARD 14)
+PROJECT (FCEmu)
+set (CMAKE_CXX_STANDARD 11)
 
-add_executable(fcEmu main.cpp rom/RomLoader.cpp rom/RomLoader.h utility.h rom/RomData.cpp rom/RomData.h memory/Memory.cpp memory/Memory.h cpu/Cpu.cpp cpu/Cpu.h utility.cpp cpu/Instruction.cpp cpu/Instruction.h cpu/StatusFlag.cpp cpu/StatusFlag.h)
+# INCLUDE (FindPkgConfig)
+# pkg_check_modules (SFML REQUIRED sfml-system sfml-window sfml-graphics)
+# INCLUDE_DIRECTORIES (${SFML_INCLUDE_DIRS})
+# LINK_DIRECTORIES (${SFML_LIBRARY_DIRS})
+
+AUX_SOURCE_DIRECTORY (. SOURCES)
+
+
+ADD_EXECUTABLE (EMU
+    ${SOURCES}
+)
+
+TARGET_LINK_LIBRARIES (EMU
+    sfml-system sfml-window sfml-graphics
+)

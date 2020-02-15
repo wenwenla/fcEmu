@@ -1,4 +1,4 @@
-#include "StatusFlag.h"
+#include "flag.h"
 #include <cassert>
 
 StatusFlag::StatusFlag() {

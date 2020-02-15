@@ -1,4 +1,4 @@
-#include "Instruction.h"
+#include "instruction.h"
 
 
 std::string Instruction::getName() const {

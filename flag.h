@@ -2,7 +2,7 @@
 #define FCEMU_STATUSFLAG_H
 
 #include <bitset>
-#include "../utility.h"
+#include "utility.h"
 
 class StatusFlag {
 public:
