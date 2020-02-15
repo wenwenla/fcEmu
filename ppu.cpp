@@ -64,7 +64,8 @@ std::vector<Byte> Ppu::getPattern(int pattern_table, int index) const {
     return res;
 }
 
-const Ppu::ColorBGIndex& Ppu::getBackground(int index) {
+Ppu::ColorBGIndex Ppu::getBackground(int index) {
+    ColorBGIndex background(256 * 240);
     int addr_map[] = {0x2000, 0x2400, 0x2800, 0x2c00};
     int start_addr = addr_map[index];
     int sprite_table = (m_register->ctrl() >> 4 & 1);
@@ -98,18 +99,44 @@ const Ppu::ColorBGIndex& Ppu::getBackground(int index) {
                 if (bg[k]) {
                     color_index += (attr << 2 | bg[k]); 
                 }
-                m_bg[pixel_r * 256 + pixel_c] = m_bus->read(color_index);
+                background[pixel_r * 256 + pixel_c] = m_bus->read(color_index);
             }
         }
     }
-    return m_bg;
+    return background;
 }
 
 Byte Ppu::getBgColorIndex(int pixel_row, int pixel_col) {
     return m_bg[(pixel_row * 256 + pixel_col) % (256 * 240)];
 }
 
-const Ppu::Sprites& Ppu::getPpuSprites() {
+
+bool Ppu::onDMA(uint16_t& addr) {
+    return m_register->onDMA(addr);
+}
+
+void Ppu::transferData(uint16_t addr, Byte data) {
+    m_register->transfer((addr & 0xFF), data);
+}
+
+void Ppu::updateBackground() {
+    if (!(m_register->mask() >> 3 & 1)) return;
+    auto bg0 = getBackground(0);
+    auto bg1 = getBackground(1);
+    int offset_x = m_register->offsetX();
+    for (int row = 0; row < 240; ++row) {
+        for (int col = 0; col < 256; ++col) {
+            if (offset_x + col < 256) {
+                m_bg[row * 256 + col] = bg0[row * 256 + col + offset_x];
+            } else {
+                m_bg[row * 256 + col] = bg1[row * 256 + col + offset_x - 256];
+            }
+        }
+    }
+}
+
+void Ppu::updateSprites() {
+    if (!(m_register->mask() >> 4 & 1)) return;
     if (m_register->ctrl() >> 5 & 1) {
         printf("8 * 16 MODE\n");
         assert(!"TODO: COMPLETE 8 * 16 MODE");
@@ -124,7 +151,7 @@ const Ppu::Sprites& Ppu::getPpuSprites() {
         m_sprites[i].h_flip = (sprites_buffer[i * 4 + 2] >> 6 & 1);
         m_sprites[i].z = (sprites_buffer[i * 4  + 2] >> 5 & 1);
 
-        auto pattern = getPattern(sprite_pattern_table, sprites_buffer[i * 4 + 1]); 
+        auto pattern = getPattern(sprite_pattern_table, sprites_buffer[i * 4 + 1]);
         Byte attr = (sprites_buffer[i * 4 + 2] & 3);
         m_sprites[i].color_index.resize(64);
         for (int pixel_index = 0; pixel_index < 64; ++pixel_index) {
@@ -132,7 +159,7 @@ const Ppu::Sprites& Ppu::getPpuSprites() {
             if (m_sprites[i].v_flip) { tmp_r = 7 - tmp_r; }
             if (m_sprites[i].h_flip) { tmp_c = 7 - tmp_c; }
             int transfer_index = tmp_r * 8 + tmp_c;
-            
+
             int palettes_addr = 0x3F10;
             if (pattern[transfer_index]) {
                 palettes_addr += ((attr << 2) | pattern[transfer_index]);
@@ -148,17 +175,22 @@ const Ppu::Sprites& Ppu::getPpuSprites() {
             } else {
                 //transprant
                 m_sprites[i].color_index[pixel_index] = getBgColorIndex(
-                    pixel_index / 8 + m_sprites[i].y + 1, pixel_index % 8 + m_sprites[i].x);
-            }   
+                        pixel_index / 8 + m_sprites[i].y + 1, pixel_index % 8 + m_sprites[i].x);
+            }
         }
     }
-    return m_sprites;
+    for (int i = 63; i >= 0; --i) {
+        auto sprite = m_sprites[i];
+        for (int pixel = 0; pixel < 64; ++pixel) {
+            if (sprite.x + pixel % 8 >= 256 || sprite.y + pixel / 8 + 1 >= 240) continue;
+            int row = sprite.y + pixel / 8 + 1, col = sprite.x + pixel % 8;
+            m_bg[row * 256 + col] = sprite.color_index[pixel];
+        }
+    }
 }
 
-bool Ppu::onDMA(uint16_t& addr) {
-    return m_register->onDMA(addr);
-}
-
-void Ppu::transferData(uint16_t addr, Byte data) {
-    m_register->transfer((addr & 0xFF), data);
+const Ppu::ColorBGIndex &Ppu::getImage() {
+    updateBackground();
+    updateSprites();
+    return m_bg;
 }

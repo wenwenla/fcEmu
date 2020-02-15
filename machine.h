@@ -49,7 +49,7 @@ public:
     }
 
     void onRender(sf::RenderWindow& window) override {
-        drawCode(window);
+//        drawCode(window);
         drawPalettes(window);
         drawBackground(window);
     }
@@ -101,11 +101,11 @@ public:
 
     void drawBackground(sf::RenderWindow& window) {
         auto ppu = machine->getPpu();
-        auto bg = ppu->getBackground(0);
+        auto bg = ppu->getImage();
         for (unsigned i = 0; i < bg.size(); ++i) {
             m_background.setPixel(i % 256, i / 256, PALETTES[bg[i]]);
         }
-        drawSprites();
+//        drawSprites();
         sf::Texture texture;
         bool ret = texture.loadFromImage(m_background);
         sf::Sprite sprite(texture);
@@ -116,21 +116,21 @@ public:
         window.draw(sprite);
     }
 
-    void drawSprites() {
-        auto ppu = machine->getPpu();
-        auto sprites = ppu->getPpuSprites();
-        for (int i = 63; i >= 0; --i) {
-            auto sprite = sprites[i];
-            for (int pixel = 0; pixel < 64; ++pixel) {
-                if (sprite.x + pixel % 8 >= 256 || sprite.y + pixel / 8 + 1 >= 240) continue;
-                m_background.setPixel(
-                    sprite.x + pixel % 8, 
-                    sprite.y + pixel / 8 + 1, 
-                    PALETTES[sprite.color_index[pixel]]
-                );
-            }
-        }
-    }
+//    void drawSprites() {
+//        auto ppu = machine->getPpu();
+//        auto sprites = ppu->getPpuSprites();
+//        for (int i = 64; i >= 0; --i) {
+//            auto sprite = sprites[i];
+//            for (int pixel = 0; pixel < 64; ++pixel) {
+//                if (sprite.x + pixel % 8 >= 256 || sprite.y + pixel / 8 + 1 >= 240) continue;
+//                m_background.setPixel(
+//                    sprite.x + pixel % 8,
+//                    sprite.y + pixel / 8 + 1,
+//                    PALETTES[sprite.color_index[pixel]]
+//                );
+//            }
+//        }
+//    }
 private:
     Machine* machine{nullptr};
     sf::Font* m_font{nullptr};

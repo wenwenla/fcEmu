@@ -5,7 +5,7 @@ Game::Game(int width, int height, const char* name) {
     m_clock = new sf::Clock();
     m_clock->restart();
 
-    m_window->setFramerateLimit(60);
+    //m_window->setFramerateLimit(60);
 }
 
 Game::~Game() {

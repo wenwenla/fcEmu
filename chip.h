@@ -50,6 +50,8 @@ public:
     Byte& ctrl() { return m_ctrl; }
     Byte& mask() { return m_mask; }
     Byte& status() { return m_status; }
+    Byte offsetX() const { return m_offset_x; }
+    Byte offsetY() const {  return m_offset_y; }
 
     const std::vector<Byte>& sprite_buffer() const { return m_sprites; }
 
@@ -60,11 +62,9 @@ private:
     Byte m_ctrl = 0;
     Byte m_mask = 0;
     Byte m_status = 0;
-    Byte m_addr_x = 0;
-    Byte m_data_x = 0;
-    Byte m_scroll = 0;
-    Byte m_addr = 0;
-    Byte m_data = 0;
+    //scroll
+    bool m_scroll_index = false;
+    Byte m_offset_x = 0, m_offset_y = 0;
 
     Byte m_buffered_data = 0;
     uint16_t m_ppu_addr = 0;
@@ -109,12 +109,12 @@ public:
     }
 
     uint8_t read(uint16_t addr) override {
-        printf("Read Hack Chip: $%04X\n", addr);    
+//        printf("Read Hack Chip: $%04X\n", addr);
         return 0;
     }
 
     void write(uint16_t addr, uint8_t data) override {
-        printf("Write Hack Chip: $%04X=%d\n", addr, data);
+//        printf("Write Hack Chip: $%04X=%d\n", addr, data);
     }
 };
 

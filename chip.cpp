@@ -71,7 +71,7 @@ void InputRegister::write(uint16_t addr, uint8_t data) {
             m_input_pos_1 = 0;
             m_update_state = 1;
         } else {
-            // updateKeyState(); // The function cannot be use on remote computers.
+            updateKeyState(); // The function cannot be use on remote computers.
             m_update_state = 0;
         }
     } else {
@@ -174,7 +174,12 @@ void PPUReg::write(uint16_t addr, uint8_t data) {
         m_sprites[m_sprites_addr++] = data;
         break;
     case 5:
-        //TODO
+        if (!m_scroll_index) {
+            m_offset_x = data;
+        } else {
+            m_offset_y = data;
+        }
+        m_scroll_index = !m_scroll_index;
         break;
     case 6:
         if (m_addr_latch == 0) {
@@ -212,8 +217,9 @@ bool PPUReg::onDMA(uint16_t& addr) {
         if ((m_dma_addr & 0xFF) == 0) {
             m_dma = false;
         }
+        return true;
     }
-    return m_dma;
+    return false;
 }
 
 uint8_t PatternTable::read(uint16_t addr) {

@@ -33,10 +33,11 @@ public:
     ColorPalettes getPalettes() const;
     std::vector<Byte> getPattern(int sprite_table, int index) const;
     
-    const ColorBGIndex& getBackground(int index);
-    const Sprites& getPpuSprites();
-
+    ColorBGIndex getBackground(int index);
     Byte getBgColorIndex(int pixel_row, int pixel_col);
+    void updateBackground();
+    void updateSprites();
+    const ColorBGIndex& getImage();
 
     bool onDMA(uint16_t& addr);
     void transferData(uint16_t addr, Byte data);
