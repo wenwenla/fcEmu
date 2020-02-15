@@ -48,7 +48,7 @@ bool Ram::sensitive(uint16_t addr) {
 InputRegister::InputRegister() : m_btn{0}, m_input_pos_1{0} {}
 
 bool InputRegister::sensitive(uint16_t addr) {
-    return addr >= 0x4000 && addr < 0x4020;    
+    return addr == 0x4016 || addr == 0x4017;
 }
 
 uint8_t InputRegister::read(uint16_t addr) {
@@ -96,6 +96,10 @@ void InputRegister::updateKeyState() {
     }
 }
 
+PPUReg::PPUReg() {
+    m_sprites.resize(256);
+}
+
 uint8_t PPUReg::read(uint16_t addr) {
     if (addr == 0x4014) {
         assert(!"TODO: CANNOT READ 0x4014");
@@ -119,7 +123,7 @@ uint8_t PPUReg::read(uint16_t addr) {
         assert(!"CANNOT READ 0x2003");
         break;
     case 4:
-        // TODO
+        res = m_sprites[m_sprites_addr++];
         break;
     case 5:
         assert(!"CANNOT READ 0x2005");
@@ -145,7 +149,10 @@ uint8_t PPUReg::read(uint16_t addr) {
  
 void PPUReg::write(uint16_t addr, uint8_t data) {
     if (addr == 0x4014) {
-        assert(!"TODO Write 0x4014");
+        //copy data from 0x??00 -- 0x??FF to sprites
+        m_dma = true;
+        m_dma_addr = (data << 8);
+        return;
     }
     addr = (addr - 0x2000) % 8;
     switch (addr) {
@@ -160,10 +167,10 @@ void PPUReg::write(uint16_t addr, uint8_t data) {
         assert(!"CANNOT WRITE 0x2002");
         break;
     case 3:
-        //TODO
+        m_sprites_addr = data;
         break;
     case 4:
-        //TODO
+        m_sprites[m_sprites_addr++] = data;
         break;
     case 5:
         //TODO
@@ -190,13 +197,23 @@ void PPUReg::write(uint16_t addr, uint8_t data) {
 }
 
 bool PPUReg::sensitive(uint16_t addr) {
-    return addr >= 0x2000 && addr < 0x4000;
+    return addr >= 0x2000 && addr < 0x4000 || addr == 0x4014;
 }
     
 void PPUReg::connect(PtrToBus ppu_bus) {
     m_ppu_bus = ppu_bus;
 }
 
+bool PPUReg::onDMA(uint16_t& addr) {
+    if (m_dma) {
+        addr = m_dma_addr;
+        m_dma_addr += 1;
+        if ((m_dma_addr & 0xFF) == 0) {
+            m_dma = false;
+        }
+    }
+    return m_dma;
+}
 
 uint8_t PatternTable::read(uint16_t addr) {
     return m_data[addr];

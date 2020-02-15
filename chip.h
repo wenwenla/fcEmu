@@ -41,6 +41,7 @@ private:
 
 class PPUReg : public Chip {
 public:
+    PPUReg();
     uint8_t read(uint16_t addr) override;
     void write(uint16_t addr, uint8_t data) override;
     bool sensitive(uint16_t addr) override;
@@ -49,6 +50,11 @@ public:
     Byte& ctrl() { return m_ctrl; }
     Byte& mask() { return m_mask; }
     Byte& status() { return m_status; }
+
+    const std::vector<Byte>& sprite_buffer() const { return m_sprites; }
+
+    void transfer(uint16_t addr, Byte data) { m_sprites[addr] = data; }
+    bool onDMA(uint16_t& addr);
 
 private:
     Byte m_ctrl = 0;
@@ -65,6 +71,11 @@ private:
     int m_addr_latch = 0;
 
     PtrToBus m_ppu_bus{nullptr};
+
+    std::vector<Byte> m_sprites;
+    Byte m_sprites_addr{0};
+    bool m_dma{false};
+    uint16_t m_dma_addr{0};
 };
 
 class InputRegister : public Chip {
@@ -94,15 +105,16 @@ private:
 class HackChip : public Chip {
 public:
     bool sensitive(uint16_t addr) override {
-        return addr >= 0x4020 && addr < 0x8000;
+        return true;
     }
 
     uint8_t read(uint16_t addr) override {
+        printf("Read Hack Chip: $%04X\n", addr);    
         return 0;
     }
 
     void write(uint16_t addr, uint8_t data) override {
-
+        printf("Write Hack Chip: $%04X=%d\n", addr, data);
     }
 };
 

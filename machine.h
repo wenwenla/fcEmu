@@ -15,6 +15,7 @@ public:
     const std::shared_ptr<Cpu> getCpu() const { return m_cpu; }
     const std::shared_ptr<Ppu> getPpu() const { return m_ppu; }
 private:
+    std::shared_ptr<Bus> m_cpu_bus, m_ppu_bus;
     std::shared_ptr<Cpu> m_cpu {nullptr};
     std::shared_ptr<Ppu> m_ppu {nullptr};
     std::shared_ptr<InputRegister> m_input {nullptr};
@@ -32,7 +33,7 @@ public:
 
         m_palettes.create(16, 2);
         m_background.create(256, 240);
-    }
+     }
 
     ~MachineEntity() {
         delete machine;
@@ -104,6 +105,7 @@ public:
         for (unsigned i = 0; i < bg.size(); ++i) {
             m_background.setPixel(i % 256, i / 256, PALETTES[bg[i]]);
         }
+        drawSprites();
         sf::Texture texture;
         bool ret = texture.loadFromImage(m_background);
         sf::Sprite sprite(texture);
@@ -112,6 +114,22 @@ public:
         auto winsize = window.getSize();
         sprite.setPosition(winsize.x - bound.width, winsize.y - bound.height);
         window.draw(sprite);
+    }
+
+    void drawSprites() {
+        auto ppu = machine->getPpu();
+        auto sprites = ppu->getPpuSprites();
+        for (int i = 63; i >= 0; --i) {
+            auto sprite = sprites[i];
+            for (int pixel = 0; pixel < 64; ++pixel) {
+                if (sprite.x + pixel % 8 >= 256 || sprite.y + pixel / 8 + 1 >= 240) continue;
+                m_background.setPixel(
+                    sprite.x + pixel % 8, 
+                    sprite.y + pixel / 8 + 1, 
+                    PALETTES[sprite.color_index[pixel]]
+                );
+            }
+        }
     }
 private:
     Machine* machine{nullptr};
