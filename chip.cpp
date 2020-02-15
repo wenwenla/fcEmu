@@ -86,7 +86,8 @@ void InputRegister::updateKeyState() {
         sf::Keyboard::Space, //select
         sf::Keyboard::Enter, //start
         sf::Keyboard::Up, //up
-        sf::Keyboard::Down, //left
+        sf::Keyboard::Down, //down
+        sf::Keyboard::Left, //left
         sf::Keyboard::Right //right
     };
     if (m_update_state == 1) {

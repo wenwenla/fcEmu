@@ -27,6 +27,12 @@ void Ppu::run() {
         if (m_register->ctrl() >> 7 & 1) {
             m_nmi = true;
         }
+        m_register->status() &= ~(1 << 6);
+    }
+    int spirte_zero_y = (int)m_register->sprite_buffer()[0] + 1;
+    int sprite_zero_x = (int)m_register->sprite_buffer()[3];
+    if (spirte_zero_y >= m_row && spirte_zero_y <= m_row + 8 && sprite_zero_x >= m_col && sprite_zero_x <= m_col + 8) {
+        m_register->status() |= (1 << 6);
     }
 }
 

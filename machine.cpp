@@ -36,7 +36,7 @@ Machine::Machine() {
 void Machine::step(int64_t ns) {
     m_time_last += ns;
     int cnt = 0;
-    while (m_time_last > 601) {
+    while (m_time_last > 0) {
         int cycles = m_cpu->run();
         
         //CHECK DMA
@@ -45,14 +45,17 @@ void Machine::step(int64_t ns) {
             m_ppu->transferData(addr, m_cpu_bus->read(addr));
         }
         //DMA END
-
         m_time_last -= cycles * 601;
-        m_ppu->run();
-        m_ppu->run();
-        m_ppu->run();
-        if (m_ppu->nmi()) {
-            m_cpu->setNMI();
-            m_ppu->nmi() = false;
+        
+        for (int t = 0; t < cycles; ++t) {
+            m_ppu->run();
+            m_ppu->run();
+            m_ppu->run();
+            if (m_ppu->nmi()) {
+                m_cpu->setNMI();
+                m_ppu->nmi() = false;
+            }
         }
+
     }
 }
